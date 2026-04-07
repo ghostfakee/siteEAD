@@ -7,7 +7,7 @@ require_once __DIR__ . '/includes/bootstrap.php';
 $id   = (int) ($_GET['id'] ?? 0);
 $type = trim((string) ($_GET['type'] ?? 'pdf'));
 
-if ($id <= 0) {
+if ($id <= 0 || !in_array($type, ['pdf'], true)) {
     http_response_code(404);
     exit;
 }

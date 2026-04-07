@@ -14,14 +14,18 @@ final class UserModel
     public function verify(string $username, string $password): bool
     {
         $users = $this->all();
-        return isset($users[$username]) && password_verify($password, $users[$username]);
+        if (!isset($users[$username])) {
+            return false;
+        }
+        return password_verify($password, $users[$username]);
     }
 
     public function savePassword(string $username, string $password): void
     {
         $users = $this->all();
-        $users[$username] = password_hash($password, PASSWORD_DEFAULT);
-        $php = "<?php\n\nreturn " . var_export($users, true) . ";\n";
-        file_put_contents(USERS_FILE, $php);
+        // Always hash with Argon2id
+        $users[$username] = hash_password($password);
+        save_users($users);
+        audit_log('password_changed', 'info', $username, 'Senha alterada pelo usuário');
     }
 }

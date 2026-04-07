@@ -139,10 +139,10 @@ function default_content(): array
 function ensure_storage(): void
 {
     if (!is_dir(DATA_PATH)) {
-        mkdir(DATA_PATH, 0777, true);
+        mkdir(DATA_PATH, 0755, true);
     }
     if (!is_dir(MEDIA_PATH)) {
-        mkdir(MEDIA_PATH, 0777, true);
+        mkdir(MEDIA_PATH, 0755, true);
     }
     if (!file_exists(CONTENT_FILE)) {
         file_put_contents(CONTENT_FILE, json_encode(default_content(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
@@ -153,7 +153,12 @@ function ensure_storage(): void
         $needsUsers = !is_array($users) || $users === [];
     }
     if ($needsUsers) {
-        $hash = password_hash('admin123', PASSWORD_DEFAULT);
+        // Argon2id hash — user must change on first login
+        $hash = password_hash('admin123', PASSWORD_ARGON2ID, [
+            'memory_cost' => 65536,
+            'time_cost'   => 4,
+            'threads'     => 2,
+        ]);
         file_put_contents(USERS_FILE, "<?php\n\nreturn [\n    'admin' => '{$hash}',\n];\n");
     }
 }
@@ -175,7 +180,7 @@ function content_data(): array
                     $content = $decoded;
                 }
             }
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             // fall through to JSON
         }
     }
@@ -192,7 +197,7 @@ function content_data(): array
                 $pdo = get_pdo();
                 $stmt = $pdo->prepare("INSERT INTO content_store (store_key, store_value) VALUES ('main_content', ?) ON DUPLICATE KEY UPDATE store_value = ?");
                 $stmt->execute([$json, $json]);
-            } catch (\Throwable $e) { /* silent */ }
+            } catch (\Throwable) { /* silent */ }
         }
     }
 
@@ -259,7 +264,7 @@ function save_content(array $content): void
             $pdo = get_pdo();
             $stmt = $pdo->prepare("INSERT INTO content_store (store_key, store_value) VALUES ('main_content', ?) ON DUPLICATE KEY UPDATE store_value = ?");
             $stmt->execute([$json, $json]);
-        } catch (\Throwable $e) { /* fall through */ }
+        } catch (\Throwable) { /* fall through */ }
     }
 
     // Always save JSON as backup

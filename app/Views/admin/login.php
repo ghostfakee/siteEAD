@@ -9,18 +9,17 @@
 </head>
 <body class="admin-login">
     <form method="post" class="admin-login__card">
+        <?= csrf_field() ?>
         <h1>CMS UNIVAG</h1>
-        <p>Painel administrativo em arquitetura MVC.</p>
         <?php if ($error !== ''): ?>
             <div class="admin-alert admin-alert--error"><?= e($error) ?></div>
         <?php endif; ?>
-        <div class="admin-field"><label>Usuario</label><input type="text" name="username" required></div>
-        <div class="admin-field"><label>Senha</label><input type="password" name="password" required></div>
+        <div class="admin-field"><label>Usuário</label><input type="text" name="username" required autocomplete="username"></div>
+        <div class="admin-field"><label>Senha</label><input type="password" name="password" required autocomplete="current-password"></div>
         <div class="admin-actions-row">
             <button type="submit" class="admin-btn admin-btn--primary">Entrar</button>
             <a href="../index.php" class="admin-btn admin-btn--secondary">Voltar ao site</a>
         </div>
-        <p>Login padrao: <strong>admin</strong> / <strong>admin123</strong></p>
     </form>
 </body>
 </html>

@@ -66,3 +66,42 @@ INSERT INTO manual_page_config (config_key, config_value) VALUES
     ('hero_image', ''),
     ('hero_logo', '')
 ON DUPLICATE KEY UPDATE config_key = config_key;
+
+-- Security: audit log
+CREATE TABLE IF NOT EXISTS audit_log (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    event_type VARCHAR(50) NOT NULL,
+    severity ENUM('info','warning','error','critical') DEFAULT 'info',
+    user VARCHAR(100),
+    ip VARCHAR(45),
+    user_agent VARCHAR(500),
+    description TEXT,
+    context JSON,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_event_type (event_type),
+    INDEX idx_severity (severity),
+    INDEX idx_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Security: rate limiting for login
+CREATE TABLE IF NOT EXISTS login_attempts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(100) NOT NULL,
+    ip VARCHAR(45) NOT NULL,
+    attempted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_username_ip (username, ip),
+    INDEX idx_attempted_at (attempted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Observability: slow query metrics
+CREATE TABLE IF NOT EXISTS db_metrics (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    query_hash CHAR(32) NOT NULL,
+    query_sample TEXT,
+    exec_time_ms FLOAT NOT NULL,
+    rows_affected INT DEFAULT 0,
+    called_from VARCHAR(300),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_exec_time (exec_time_ms),
+    INDEX idx_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

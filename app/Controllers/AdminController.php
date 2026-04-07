@@ -28,6 +28,7 @@ final class AdminController
 
         $error = '';
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            csrf_verify();
             $username = trim((string) ($_POST['username'] ?? ''));
             $password = (string) ($_POST['password'] ?? '');
 
@@ -72,6 +73,7 @@ final class AdminController
         $content = $this->contentModel->getAll();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            csrf_verify();
             $action = (string) ($_POST['action'] ?? '');
             $id = (string) ($_POST['id'] ?? '');
 
@@ -115,6 +117,7 @@ final class AdminController
         $flash = null;
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            csrf_verify();
             $content = $this->contentModel->getAll();
             $data = $_POST;
 
@@ -164,6 +167,7 @@ final class AdminController
         $flash = null;
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            csrf_verify();
             $data = $_POST;
             try {
                 $image = trim((string) ($_POST['image'] ?? $slide['image']));
@@ -198,6 +202,7 @@ final class AdminController
         $content = $this->contentModel->getAll();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            csrf_verify();
             $content['site']['site_name'] = trim((string) ($_POST['site_name'] ?? $content['site']['site_name']));
             $content['site']['logo_text'] = trim((string) ($_POST['logo_text'] ?? $content['site']['logo_text']));
             $content['site']['privacy_text'] = trim((string) ($_POST['privacy_text'] ?? $content['site']['privacy_text']));
@@ -282,6 +287,7 @@ final class AdminController
 
         // ── POST actions ──────────────────────────────────────────────────
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            csrf_verify();
 
             if ($action === 'save_config') {
                 $manualModel->savePageConfig([
@@ -392,6 +398,7 @@ final class AdminController
     {
         require_login();
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            csrf_verify();
             $current = (string) ($_POST['current_password'] ?? '');
             $new = (string) ($_POST['new_password'] ?? '');
             $confirm = (string) ($_POST['confirm_password'] ?? '');
