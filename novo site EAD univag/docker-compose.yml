@@ -1,0 +1,58 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: univag_cms_web
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www/html/
+    environment:
+      - DB_HOST=mysql
+      - DB_NAME=univag_cms
+      - DB_USER=root
+      - DB_PASS=univag123
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - univag_network
+
+  mysql:
+    image: mysql:8.0
+    container_name: univag_cms_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: univag123
+      MYSQL_DATABASE: univag_cms
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "3306:3306"
+    networks:
+      - univag_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: univag_cms_phpmyadmin
+    ports:
+      - "8081:80"
+    environment:
+      - PMA_HOST=mysql
+      - PMA_USER=root
+      - PMA_PASSWORD=univag123
+    depends_on:
+      - mysql
+    networks:
+      - univag_network
+
+volumes:
+  mysql_data:
+
+networks:
+  univag_network:
