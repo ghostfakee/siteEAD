@@ -1,0 +1,26 @@
+# Ambiente
+.env
+
+# Dados locais (gerados em runtime)
+data/content.json
+data/users.php
+
+# Uploads de mídia locais
+media/
+
+# Docker volumes
+mysql_data/
+
+# Dependências / build
+vendor/
+node_modules/
+
+# IDE e OS
+.vscode/
+.idea/
+*.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
