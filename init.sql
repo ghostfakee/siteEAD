@@ -67,6 +67,16 @@ INSERT INTO manual_page_config (config_key, config_value) VALUES
     ('hero_logo', '')
 ON DUPLICATE KEY UPDATE config_key = config_key;
 
+-- Site images (cover images, etc.) stored as blobs
+CREATE TABLE IF NOT EXISTS site_images (
+    image_key VARCHAR(100) PRIMARY KEY,
+    image_data LONGBLOB NOT NULL,
+    image_mime VARCHAR(100) NOT NULL,
+    image_filename VARCHAR(255),
+    image_size INT,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Security: audit log
 CREATE TABLE IF NOT EXISTS audit_log (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,

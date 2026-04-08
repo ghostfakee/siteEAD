@@ -6,17 +6,20 @@ namespace App\Controllers;
 
 use App\Core\View;
 use App\Models\ContentModel;
+use App\Models\SiteImageModel;
 use App\Models\UserModel;
 
 final class AdminController
 {
     private ContentModel $contentModel;
     private UserModel $userModel;
+    private SiteImageModel $siteImageModel;
 
     public function __construct()
     {
-        $this->contentModel = new ContentModel();
-        $this->userModel = new UserModel();
+        $this->contentModel   = new ContentModel();
+        $this->userModel      = new UserModel();
+        $this->siteImageModel = new SiteImageModel();
     }
 
     public function login(): void
@@ -129,8 +132,8 @@ final class AdminController
                 }
 
                 $slide = $this->normalizeSlide($data);
-                if ($slide['title'] === '' || $slide['image'] === '') {
-                    throw new \RuntimeException('Titulo e imagem sao obrigatorios.');
+                if ($slide['image'] === '') {
+                    throw new \RuntimeException('Imagem obrigatoria.');
                 }
 
                 $content['hero']['slides'][] = $slide;
@@ -203,10 +206,24 @@ final class AdminController
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             csrf_verify();
-            $content['site']['site_name'] = trim((string) ($_POST['site_name'] ?? $content['site']['site_name']));
-            $content['site']['logo_text'] = trim((string) ($_POST['logo_text'] ?? $content['site']['logo_text']));
+            $content['site']['site_name']   = trim((string) ($_POST['site_name']   ?? $content['site']['site_name']));
+            $content['site']['logo_text']   = trim((string) ($_POST['logo_text']   ?? $content['site']['logo_text']));
             $content['site']['privacy_text'] = trim((string) ($_POST['privacy_text'] ?? $content['site']['privacy_text']));
-            $content['site']['privacy_url'] = trim((string) ($_POST['privacy_url'] ?? $content['site']['privacy_url']));
+            $content['site']['privacy_url']  = trim((string) ($_POST['privacy_url']  ?? $content['site']['privacy_url']));
+
+            // Logo uploads
+            foreach (['logo_nav', 'logo_footer'] as $logoKey) {
+                if (!empty($_FILES[$logoKey]['name'])) {
+                    try {
+                        $this->siteImageModel->saveUpload($_FILES[$logoKey], $logoKey);
+                    } catch (\Throwable $uploadError) {
+                        $this->flash('Erro no upload do logo: ' . $uploadError->getMessage(), 'error');
+                        header('Location: content.php');
+                        exit;
+                    }
+                }
+            }
+
             if (isset($_POST['top_links'])) { $content['site']['top_links'] = post_list('top_links', ['label', 'url']); }
             if (isset($_POST['main_menu'])) { $content['site']['main_menu'] = post_list('main_menu', ['label', 'url']); }
             if (isset($_POST['footer_ctas'])) { $content['site']['footer_ctas'] = post_list('footer_ctas', ['label', 'url']); }
@@ -217,7 +234,27 @@ final class AdminController
             if (isset($_POST['course_items'])) { $content['courses']['items'] = post_tags_list('course_items'); }
             $content['modalities']['title'] = trim((string) ($_POST['modalities_title'] ?? $content['modalities']['title']));
             if (isset($_POST['modalities_items'])) { $content['modalities']['items'] = post_list('modalities_items', ['title', 'image', 'content', 'cta_label', 'cta_url']); }
-            $content['scholarships']['title'] = trim((string) ($_POST['scholarships_title'] ?? $content['scholarships']['title']));
+            $content['scholarships']['title']       = trim((string) ($_POST['scholarships_title'] ?? $content['scholarships']['title']));
+            $content['scholarships']['cta_label']   = trim((string) ($_POST['scholarships_cta_label'] ?? ''));
+            $content['scholarships']['cta_url']     = trim((string) ($_POST['scholarships_cta_url'] ?? ''));
+            $allowedShapes = ['diagonal', 'retangulo', 'quadrado', 'arredondado'];
+            $shape = (string) ($_POST['scholarships_cover_shape'] ?? 'diagonal');
+            $content['scholarships']['cover_shape'] = in_array($shape, $allowedShapes, true) ? $shape : 'diagonal';
+
+            // Handle cover image: file upload takes priority over URL field
+            if (!empty($_FILES['scholarships_cover_image']['name'])) {
+                try {
+                    $this->siteImageModel->saveUpload($_FILES['scholarships_cover_image'], 'scholarships_cover');
+                    // Clear the URL so the DB image is used
+                    $content['scholarships']['cover_image'] = '';
+                } catch (\Throwable $uploadError) {
+                    $this->flash('Erro no upload da imagem: ' . $uploadError->getMessage(), 'error');
+                    header('Location: content.php');
+                    exit;
+                }
+            } else {
+                $content['scholarships']['cover_image'] = trim((string) ($_POST['scholarships_cover_image'] ?? ''));
+            }
             if (isset($_POST['scholarship_items'])) { $content['scholarships']['items'] = post_list('scholarship_items', ['label', 'url']); }
             $content['structure']['title'] = trim((string) ($_POST['structure_title'] ?? $content['structure']['title']));
             $content['structure']['cta_label'] = trim((string) ($_POST['structure_cta_label'] ?? $content['structure']['cta_label']));
@@ -483,19 +520,14 @@ final class AdminController
     private function normalizeSlide(array $data, ?array $existing = null): array
     {
         $slide = $existing ?? [];
-        $slide['id'] = $existing['id'] ?? bin2hex(random_bytes(6));
-        $slide['title'] = trim((string) ($data['title'] ?? ''));
-        $slide['subtitle'] = trim((string) ($data['subtitle'] ?? ''));
-        $slide['badge'] = trim((string) ($data['badge'] ?? ''));
-        $slide['image'] = trim((string) ($data['image'] ?? ($existing['image'] ?? '')));
-        $slide['cta_label'] = trim((string) ($data['cta_label'] ?? ''));
-        $slide['cta_url'] = trim((string) ($data['cta_url'] ?? ''));
-        $slide['secondary_cta_label'] = trim((string) ($data['secondary_cta_label'] ?? ''));
-        $slide['secondary_cta_url'] = trim((string) ($data['secondary_cta_url'] ?? ''));
-        $slide['info_title'] = trim((string) ($data['info_title'] ?? ''));
-        $slide['info_lines'] = array_values(array_filter(array_map('trim', explode("\n", (string) ($data['info_lines'] ?? '')))));
-        $slide['active'] = !empty($data['active']);
-        $slide['order'] = (int) ($data['order'] ?? 0);
+        $slide['id']                   = $existing['id'] ?? bin2hex(random_bytes(6));
+        $slide['image']                = trim((string) ($data['image'] ?? ($existing['image'] ?? '')));
+        $slide['cta_label']            = trim((string) ($data['cta_label'] ?? ''));
+        $slide['cta_url']              = trim((string) ($data['cta_url'] ?? ''));
+        $slide['secondary_cta_label']  = trim((string) ($data['secondary_cta_label'] ?? ''));
+        $slide['secondary_cta_url']    = trim((string) ($data['secondary_cta_url'] ?? ''));
+        $slide['active']               = !empty($data['active']);
+        $slide['order']                = (int) ($data['order'] ?? 0);
         return $slide;
     }
 

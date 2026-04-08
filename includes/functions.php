@@ -176,6 +176,23 @@ function format_date_br(?string $date): string
     return $timestamp ? date('d/m/Y', $timestamp) : $date;
 }
 
+// ── Bolsas label splitter ────────────────────────────────────────────────────
+// Splits "Orgulho de Ser UNIVAG" → ["Orgulho de Ser", "UNIVAG"]
+// Single-word labels → ["", "NBB"]
+function bolsas_split_label(string $label): array
+{
+    $label = trim($label);
+    // Find last ALL-CAPS word(s) at the end to use as bold part
+    if (preg_match('/^(.*?)\s*([A-ZÁÉÍÓÚÃÕÂÊÔÇ+0-9][A-ZÁÉÍÓÚÃÕÂÊÔÇ\s+0-9]*)$/u', $label, $m)) {
+        $small = trim($m[1]);
+        $bold  = trim($m[2]);
+        if ($small !== '' && $bold !== '') {
+            return [$small, $bold];
+        }
+    }
+    return ['', $label];
+}
+
 // ── YouTube/Vimeo sanitized embed URL ────────────────────────────────────────
 
 function youtube_embed_url(string $url): string

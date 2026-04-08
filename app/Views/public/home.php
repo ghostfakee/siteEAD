@@ -24,7 +24,14 @@
                 <nav class="nav__menu nav__menu--left">
                     <?php foreach ($leftMenu as $item): ?><a href="<?= e($item['url']) ?>"><?= e($item['label']) ?></a><?php endforeach; ?>
                 </nav>
-                <a class="nav__brand" href="index.php"><?= e($site['logo_text']) ?></a>
+                <?php $__hasNavLogo = (new \App\Models\SiteImageModel())->exists('logo_nav'); ?>
+                <a class="nav__brand" href="index.php">
+                    <?php if ($__hasNavLogo): ?>
+                        <img src="site-image.php?key=logo_nav" alt="<?= e($site['logo_text']) ?>" class="nav__logo-img">
+                    <?php else: ?>
+                        <?= e($site['logo_text']) ?>
+                    <?php endif; ?>
+                </a>
                 <nav class="nav__menu nav__menu--right">
                     <?php foreach ($rightMenu as $item): ?><a href="<?= e($item['url']) ?>"><?= e($item['label']) ?></a><?php endforeach; ?>
                 </nav>
@@ -36,31 +43,28 @@
             <div class="hero__track" data-carousel>
                 <?php foreach ($heroSlides as $index => $slide): ?>
                     <article class="hero__slide <?= $index === 0 ? 'is-active' : '' ?>">
-                        <div class="container hero__content">
-                            <div class="hero__card">
-                                <?php if (!empty($slide['badge'])): ?><span class="hero__badge"><?= e($slide['badge']) ?></span><?php endif; ?>
-                                <h1><?= e($slide['title']) ?></h1>
-                                <?php if (!empty($slide['subtitle'])): ?><p><?= e($slide['subtitle']) ?></p><?php endif; ?>
-                                <div class="hero__buttons">
-                                    <?php if (!empty($slide['cta_label'])): ?><a class="btn btn--light" href="<?= e($slide['cta_url']) ?>"><?= e($slide['cta_label']) ?></a><?php endif; ?>
-                                    <?php if (!empty($slide['secondary_cta_label'])): ?><a class="btn" href="<?= e($slide['secondary_cta_url']) ?>"><?= e($slide['secondary_cta_label']) ?></a><?php endif; ?>
-                                </div>
+                        <?php if (!empty($slide['image'])): ?>
+                            <img class="hero__bg" src="<?= e($slide['image']) ?>" alt="banner">
+                        <?php endif; ?>
+                        <?php
+                            $hasCta  = !empty($slide['cta_label'])           && !empty($slide['cta_url']);
+                            $hasCta2 = !empty($slide['secondary_cta_label']) && !empty($slide['secondary_cta_url']);
+                        ?>
+                        <?php if ($hasCta || $hasCta2): ?>
+                            <div class="hero__buttons">
+                                <?php if ($hasCta): ?><a class="hero__btn hero__btn--primary" href="<?= e($slide['cta_url']) ?>"><?= e($slide['cta_label']) ?></a><?php endif; ?>
+                                <?php if ($hasCta2): ?><a class="hero__btn hero__btn--secondary" href="<?= e($slide['secondary_cta_url']) ?>"><?= e($slide['secondary_cta_label']) ?></a><?php endif; ?>
                             </div>
-                            <div class="hero__visual">
-                                <?php if (!empty($slide['image'])): ?><img src="<?= e($slide['image']) ?>" alt="<?= e($slide['title']) ?>"><?php endif; ?>
-                            </div>
-                            <div class="hero__info">
-                                <?php if (!empty($slide['info_title'])): ?><h2><?= e($slide['info_title']) ?></h2><?php endif; ?>
-                                <?php if (!empty($slide['info_lines'])): ?><ul><?php foreach ($slide['info_lines'] as $line): ?><li><?= e($line) ?></li><?php endforeach; ?></ul><?php endif; ?>
-                            </div>
-                        </div>
+                        <?php endif; ?>
                     </article>
                 <?php endforeach; ?>
             </div>
-            <div class="hero__controls container">
-                <button type="button" data-carousel-prev>Anterior</button>
-                <div class="hero__dots"><?php foreach ($heroSlides as $index => $slide): ?><button type="button" class="<?= $index === 0 ? 'is-active' : '' ?>" data-carousel-dot="<?= $index + 1 ?>"><?= $index + 1 ?></button><?php endforeach; ?></div>
-                <button type="button" data-carousel-next>Próximo</button>
+            <button class="hero__arrow hero__arrow--prev" type="button" data-carousel-prev>&#8249;</button>
+            <button class="hero__arrow hero__arrow--next" type="button" data-carousel-next>&#8250;</button>
+            <div class="hero__dots">
+                <?php foreach ($heroSlides as $index => $slide): ?>
+                    <button type="button" class="<?= $index === 0 ? 'is-active' : '' ?>" data-carousel-dot="<?= $index + 1 ?>"></button>
+                <?php endforeach; ?>
             </div>
         </section>
         <section class="section section--dark" id="porque-univag">
@@ -72,14 +76,50 @@
         <section class="section section--soft" id="modalidades">
             <div class="container"><h2 class="section__title"><?= e($content['modalities']['title']) ?></h2><div class="modality-list"><?php foreach ($content['modalities']['items'] as $index => $item): ?><article class="modality <?= $index % 2 === 1 ? 'modality--reverse' : '' ?>"><img src="<?= e($item['image']) ?>" alt="<?= e($item['title']) ?>"><div class="modality__content"><h3><?= e($item['title']) ?></h3><p><?= nl2html($item['content']) ?></p><a class="btn" href="<?= e($item['cta_url']) ?>"><?= e($item['cta_label']) ?></a></div></article><?php endforeach; ?></div></div>
         </section>
-        <section class="section" id="bolsas">
-            <div class="container"><h2 class="section__title"><?= e($content['scholarships']['title']) ?></h2><div class="benefits-grid"><?php foreach ($content['scholarships']['items'] as $item): ?><a href="<?= e($item['url']) ?>"><?= e($item['label']) ?></a><?php endforeach; ?></div></div>
+        <section class="bolsas-section" id="bolsas">
+            <?php $sch = $content['scholarships']; ?>
+            <div class="bolsas-inner">
+                <?php
+                    $coverSrc   = '';
+                    if ((new \App\Models\SiteImageModel())->exists('scholarships_cover')) {
+                        $coverSrc = 'site-image.php?key=scholarships_cover';
+                    } elseif (!empty($sch['cover_image'])) {
+                        $coverSrc = $sch['cover_image'];
+                    }
+                    $coverShape = $sch['cover_shape'] ?? 'diagonal';
+                ?>
+                <div class="bolsas-cover bolsas-cover--<?= e($coverShape) ?>">
+                    <?php if ($coverSrc !== ''): ?>
+                        <img src="<?= e($coverSrc) ?>" alt="<?= e($sch['title']) ?>">
+                    <?php endif; ?>
+                    <?php if ($coverShape === 'diagonal'): ?>
+                        <div class="bolsas-diagonal"></div>
+                    <?php endif; ?>
+                </div>
+                <div class="bolsas-content">
+                    <h2 class="bolsas-title"><?= e($sch['title']) ?></h2>
+                    <div class="bolsas-grid">
+                        <?php foreach ($sch['items'] as $item): ?>
+                            <?php [$small, $bold] = bolsas_split_label($item['label']); ?>
+                            <a class="bolsas-item" href="<?= e($item['url']) ?>">
+                                <?php if ($small): ?><span class="bolsas-item__small"><?= e($small) ?></span><?php endif; ?>
+                                <span class="bolsas-item__bold"><?= e($bold) ?></span>
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
+                    <?php if (!empty($sch['cta_label']) && !empty($sch['cta_url'])): ?>
+                        <div class="bolsas-cta">
+                            <a class="bolsas-cta__btn" href="<?= e($sch['cta_url']) ?>"><?= e($sch['cta_label']) ?></a>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
         </section>
         <section class="section section--soft"><div class="container structure-callout"><div><span class="eyebrow"><?= e($content['structure']['title']) ?></span><a class="btn" href="<?= e($content['structure']['cta_url']) ?>"><?= e($content['structure']['cta_label']) ?></a></div></div></section>
 
         <section class="section" id="noticias"><div class="container"><h2 class="section__title"><?= e($content['news']['title']) ?></h2><a class="news-featured" href="<?= e($content['news']['featured']['url']) ?>"><img src="<?= e($content['news']['featured']['image']) ?>" alt="<?= e($content['news']['featured']['title']) ?>"><div><span><?= e(format_date_br($content['news']['featured']['date'])) ?></span><h3><?= e($content['news']['featured']['title']) ?></h3><p><?= e($content['news']['featured']['excerpt']) ?></p></div></a><div class="news-grid"><?php foreach ($content['news']['items'] as $item): ?><a class="news-card" href="<?= e($item['url']) ?>"><img src="<?= e($item['image']) ?>" alt="<?= e($item['title']) ?>"><span><?= e(format_date_br($item['date'])) ?></span><h3><?= e($item['title']) ?></h3></a><?php endforeach; ?></div></div></section>
     </main>
-    <footer class="footer"><div class="container footer__cta"><?php foreach ($site['footer_ctas'] as $cta): ?><a href="<?= e($cta['url']) ?>"><?= e($cta['label']) ?></a><?php endforeach; ?></div><div class="container footer__main"><div class="footer__brand"><div class="nav__brand nav__brand--footer"><?= e($site['logo_text']) ?></div></div><div class="footer__columns"><?php foreach ($site['footer_columns'] as $column): ?><div><h3><?= e($column['title']) ?></h3><?php foreach ($column['links'] as $link): ?><a href="<?= e($link['url']) ?>"><?= e($link['label']) ?></a><?php endforeach; ?></div><?php endforeach; ?></div></div><div class="footer__addresses"><div class="container footer__address-grid"><?php foreach ($site['addresses'] as $address): ?><a href="<?= e($address['url']) ?>"><h3><?= e($address['title']) ?></h3><p><?= nl2html($address['description']) ?></p></a><?php endforeach; ?></div></div><div class="footer__bottom"><div class="container"><a href="<?= e($site['privacy_url']) ?>"><?= e($site['privacy_text']) ?></a></div></div></footer>
+    <footer class="footer"><div class="container footer__cta"><?php foreach ($site['footer_ctas'] as $cta): ?><a href="<?= e($cta['url']) ?>"><?= e($cta['label']) ?></a><?php endforeach; ?></div><div class="container footer__main"><div class="footer__brand"><?php $__hasFooterLogo = (new \App\Models\SiteImageModel())->exists('logo_footer'); ?><a href="index.php" class="nav__brand nav__brand--footer"><?php if ($__hasFooterLogo): ?><img src="site-image.php?key=logo_footer" alt="<?= e($site['logo_text']) ?>" class="nav__logo-img nav__logo-img--footer"><?php else: ?><?= e($site['logo_text']) ?><?php endif; ?></a></div><div class="footer__columns"><?php foreach ($site['footer_columns'] as $column): ?><div><h3><?= e($column['title']) ?></h3><?php foreach ($column['links'] as $link): ?><a href="<?= e($link['url']) ?>"><?= e($link['label']) ?></a><?php endforeach; ?></div><?php endforeach; ?></div></div><div class="footer__addresses"><div class="container footer__address-grid"><?php foreach ($site['addresses'] as $address): ?><a href="<?= e($address['url']) ?>"><h3><?= e($address['title']) ?></h3><p><?= nl2html($address['description']) ?></p></a><?php endforeach; ?></div></div><div class="footer__bottom"><div class="container"><a href="<?= e($site['privacy_url']) ?>"><?= e($site['privacy_text']) ?></a></div></div></footer>
     <script src="assets/js/site.js"></script>
 </body>
 </html>

@@ -10,12 +10,12 @@
     <div class="admin-panel__header"><h2>Lista de banners</h2><a class="admin-btn admin-btn--success" href="upload.php">Adicionar banner</a></div>
     <div class="admin-table-wrap">
         <table class="admin-table">
-            <thead><tr><th>Imagem</th><th>Informacoes</th><th>Status</th><th>Ordem</th><th>Acoes</th></tr></thead>
+            <thead><tr><th>Imagem</th><th>Botões</th><th>Status</th><th>Ordem</th><th>Ações</th></tr></thead>
             <tbody>
                 <?php foreach ($slides as $slide): ?>
                     <tr>
-                        <td><img class="admin-thumb" src="<?= e($slide['image']) ?>" alt="<?= e($slide['title']) ?>"></td>
-                        <td><strong><?= e($slide['title']) ?></strong><br><small><?= e($slide['subtitle']) ?></small></td>
+                        <td><img class="admin-thumb" src="<?= e($slide['image']) ?>" alt="banner" style="max-width:160px;height:60px;object-fit:cover;border-radius:6px;"></td>
+                        <td><small><?= !empty($slide['cta_label']) ? e($slide['cta_label']) : '<span style="opacity:.4">—</span>' ?><?= !empty($slide['secondary_cta_label']) ? ' / ' . e($slide['secondary_cta_label']) : '' ?></small></td>
                         <td><span class="admin-badge <?= !empty($slide['active']) ? 'admin-badge--active' : 'admin-badge--inactive' ?>"><?= !empty($slide['active']) ? 'Ativo' : 'Inativo' ?></span></td>
                         <td><form method="post"><input type="hidden" name="action" value="order"><input type="hidden" name="id" value="<?= e($slide['id']) ?>"><input type="number" name="order" value="<?= (int) ($slide['order'] ?? 0) ?>" onchange="this.form.submit()"></form></td>
                         <td class="admin-actions-row">
