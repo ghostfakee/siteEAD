@@ -9,20 +9,9 @@
 </head>
 <body>
     <header class="manuals-header">
-        <div class="manuals-header__inner" style="<?= !empty($pageConfig['hero_image']) ? 'background-image: linear-gradient(90deg, rgba(22,10,91,.82), rgba(22,10,91,.96)), url(' . e($pageConfig['hero_image']) . ');' : '' ?>">
-            <div class="manuals-header__content">
-                <?php if (!empty($pageConfig['hero_logo'])): ?>
-                    <img class="manuals-header__logo" src="<?= e($pageConfig['hero_logo']) ?>" alt="<?= e($pageConfig['title']) ?>">
-                <?php else: ?>
-                    <div class="manuals-header__brand">
-                        <span class="manuals-header__brand-univag">UNIVAG</span>
-                        <span class="manuals-header__brand-sep">|</span>
-                        <span class="manuals-header__brand-ead">EAD</span>
-                        <span class="manuals-header__brand-title"><?= e($pageConfig['title'] ?? 'Manuais e Tutoriais') ?></span>
-                    </div>
-                <?php endif; ?>
-            </div>
-        </div>
+        <?php if ((new \App\Models\SiteImageModel())->exists('manuals_banner')): ?>
+            <img class="manuals-banner" src="../site-image.php?key=manuals_banner" alt="<?= e($pageConfig['title'] ?? 'Manuais') ?>">
+        <?php endif; ?>
         <a class="manuals-header__back" href="../index.php">&#8592; Voltar ao site</a>
     </header>
 

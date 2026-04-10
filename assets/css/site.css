@@ -33,6 +33,8 @@ button, input, textarea { font: inherit; }
 .nav__menu a { text-transform: uppercase; font-weight: 700; letter-spacing: .03em; font-size: .82rem; padding: 6px 10px; border-radius: 8px; transition: background .18s; white-space: nowrap; }
 .nav__menu a:hover { background: rgba(255,255,255,.12); }
 .nav__brand { font-size: clamp(1.6rem, 3vw, 2.8rem); font-weight: 900; line-height: 1; text-align: center; white-space: nowrap; padding: 6px 18px; letter-spacing: .06em; display: flex; align-items: center; justify-content: center; }
+.nav__ava-btn { display: inline-flex !important; align-items: center; gap: 8px; background: transparent !important; color: #fff !important; font-weight: 800 !important; font-size: .92rem !important; padding: 10px 22px !important; border-radius: 999px !important; border: 2px solid rgba(255,255,255,.7) !important; white-space: nowrap; margin-left: 14px; letter-spacing: .04em; transition: background .2s, border-color .2s !important; }
+.nav__ava-btn:hover { background: rgba(255,255,255,.15) !important; border-color: #fff !important; }
 .nav__brand--footer { font-size: clamp(2rem, 4vw, 3rem); border: none; padding: 0; }
 /* Logo image replaces brand text */
 .nav__logo-img { display: block; height: 38px; width: auto; max-width: 200px; object-fit: contain; }
@@ -130,90 +132,9 @@ button, input, textarea { font: inherit; }
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 14px 22px; border-radius: 999px; background: var(--brand); color: var(--white); font-weight: 800; }
 .btn--light { background: var(--white); color: var(--brand); }
 .btn--ghost { background: transparent; color: var(--brand); border: 1px solid var(--line); }
-/* ── Bolsas e Parcelamentos ─────────────────────────────────────────── */
-.bolsas-section { background: #f5f5f7; overflow: hidden; }
-.bolsas-inner { display: grid; grid-template-columns: clamp(460px, 50%, 640px) 1fr; min-height: 480px; }
-
-/* Left: cover image */
-.bolsas-cover { position: relative; background: #e8e8f0; overflow: hidden; }
-.bolsas-cover img { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
-
-/* Layout: diagonal (default) */
-.bolsas-cover--diagonal img { width: 100%; height: 100%; }
-.bolsas-diagonal {
-    position: absolute; inset: 0;
-    background: linear-gradient(to bottom right, transparent 49.8%, #f5f5f7 50%);
-    pointer-events: none;
-}
-
-/* Layout: retangulo — sem clip, imagem ocupa tudo */
-.bolsas-cover--retangulo { overflow: visible; }
-.bolsas-cover--retangulo img { border-radius: 0; }
-
-/* Layout: quadrado — imagem centralizada em formato quadrado com margens */
-.bolsas-cover--quadrado { display: flex; align-items: center; justify-content: center; padding: 24px; }
-.bolsas-cover--quadrado img {
-    width: min(100%, 100%);
-    aspect-ratio: 1 / 1;
-    height: auto;
-    object-fit: cover;
-    border-radius: 12px;
-}
-
-/* Layout: arredondado — imagem com bordas bem arredondadas */
-.bolsas-cover--arredondado { display: flex; align-items: center; justify-content: center; padding: 24px; }
-.bolsas-cover--arredondado img {
-    width: 100%;
-    height: calc(100% - 48px);
-    object-fit: cover;
-    border-radius: 32px;
-}
-
-/* Right: content — extra left padding pushes labels away from image edge */
-.bolsas-content { padding: 56px 48px 48px 64px; display: flex; flex-direction: column; gap: 32px; }
-.bolsas-title {
-    font-size: clamp(2rem, 4vw, 3.2rem);
-    font-weight: 900;
-    text-transform: uppercase;
-    color: var(--brand);
-    letter-spacing: -.03em;
-    margin: 0;
-    line-height: 1;
-}
-
-/* 2-column grid of scholarship items */
-.bolsas-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 40px; }
-.bolsas-item { display: flex; flex-direction: column; gap: 0; text-decoration: none; transition: opacity .18s; }
-.bolsas-item:hover { opacity: .7; }
-.bolsas-item__small { font-size: .85rem; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-soft); line-height: 1.4; }
-.bolsas-item__bold { font-size: clamp(1.3rem, 2.2vw, 1.9rem); font-weight: 900; text-transform: uppercase; color: var(--brand); letter-spacing: -.02em; line-height: 1.1; }
-
-/* CTA button */
-.bolsas-cta { margin-top: auto; }
-.bolsas-cta__btn {
-    display: inline-block;
-    padding: 14px 32px;
-    border: 2px solid rgba(13,15,94,.25);
-    border-radius: 999px;
-    font-size: .9rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: .06em;
-    color: var(--ink-soft);
-    text-decoration: none;
-    transition: border-color .2s, color .2s, background .2s;
-}
-.bolsas-cta__btn:hover { border-color: var(--brand); color: var(--brand); background: rgba(13,15,94,.04); }
-
-@media (max-width: 980px) {
-    .bolsas-inner { grid-template-columns: 1fr; }
-    .bolsas-cover { min-height: 260px; }
-    .bolsas-content { padding: 36px 24px; }
-    .bolsas-grid { grid-template-columns: 1fr 1fr; gap: 16px 24px; }
-}
-@media (max-width: 480px) {
-    .bolsas-grid { grid-template-columns: 1fr; }
-}
+/* ── Bolsas e Parcelamentos — banner full-width ─────────────────────── */
+.bolsas-banner { width: 100%; line-height: 0; }
+.bolsas-banner img { width: 100%; display: block; height: auto; }
 .structure-callout { min-height: 220px; display: grid; place-items: start; }
 .news-featured { display: grid; grid-template-columns: 1.1fr .9fr; gap: 28px; padding: 28px; margin-bottom: 28px; }
 .news-featured span, .news-card span, .page__intro { color: var(--ink-soft); }
@@ -321,3 +242,23 @@ textarea { min-height: 120px; resize: vertical; }
     .hero__bg { min-height: 260px; max-height: 420px; }
     .hero__arrow { display: none; }
 }
+
+/* ── WhatsApp float button ──────────────────────────────────────────── */
+.wa-float {
+    position: fixed !important;
+    bottom: 28px !important;
+    right: 28px !important;
+    left: auto !important;
+    top: auto !important;
+    width: 60px !important;
+    height: 60px !important;
+    border-radius: 50% !important;
+    box-shadow: 0 4px 18px rgba(0,0,0,.22);
+    overflow: hidden;
+    display: block !important;
+    z-index: 9999 !important;
+    transition: transform .2s, box-shadow .2s;
+    line-height: 0;
+}
+.wa-float:hover { transform: scale(1.1); box-shadow: 0 6px 24px rgba(0,0,0,.3); }
+.wa-float svg { width: 60px !important; height: 60px !important; display: block !important; }

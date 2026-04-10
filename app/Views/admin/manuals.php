@@ -14,50 +14,6 @@
     }
 ?>
 
-<!-- ── Config geral ──────────────────────────────────────────────── -->
-<form method="post" enctype="multipart/form-data">
-    <input type="hidden" name="action" value="save_config">
-    <section class="admin-panel">
-        <div class="admin-panel__header"><h2>Configurações da Página</h2></div>
-        <div class="admin-form-grid admin-form-grid--2">
-            <div class="admin-field"><label>Título</label><input type="text" name="title" value="<?= e($pageConfig['title']) ?>"></div>
-            <div class="admin-field"><label>Introdução</label><input type="text" name="intro" value="<?= e($pageConfig['intro']) ?>"></div>
-            <div class="admin-field"><label>Imagem de fundo do banner (URL)</label><input type="text" name="hero_image" value="<?= e($pageConfig['hero_image']) ?>" placeholder="https://..."></div>
-            <div class="admin-field"><label>Logo do banner (URL — deixe vazio para usar texto UNIVAG EAD)</label><input type="text" name="hero_logo" value="<?= e($pageConfig['hero_logo']) ?>" placeholder="https://..."></div>
-        </div>
-    </section>
-
-    <!-- Configs de categoria + vídeos -->
-    <?php foreach (['aluno' => $catAluno, 'professor' => $catProfessor] as $catKey => $cat): ?>
-        <?php if (!$cat) continue; ?>
-        <section class="admin-panel">
-            <div class="admin-panel__header"><h2>Configurações — <?= e($cat['title']) ?></h2></div>
-            <div class="admin-form-grid admin-form-grid--3">
-                <div class="admin-field"><label>Label do botão</label><input type="text" name="categories[<?= e($catKey) ?>][title]" value="<?= e($cat['title']) ?>"></div>
-                <div class="admin-field"><label>Título seção manuais</label><input type="text" name="categories[<?= e($catKey) ?>][manuals_title]" value="<?= e($cat['manuals_title']) ?>"></div>
-                <div class="admin-field"><label>Título seção vídeos</label><input type="text" name="categories[<?= e($catKey) ?>][videos_title]" value="<?= e($cat['videos_title']) ?>"></div>
-            </div>
-
-            <h3 style="margin:20px 0 12px; font-size:1rem; opacity:.75;">Vídeos Tutoriais — <?= e($cat['title']) ?></h3>
-            <?php $videos = $videosByCategory[$catKey] ?? []; ?>
-            <div id="videos-<?= e($catKey) ?>">
-                <?php foreach ($videos as $vi => $video): ?>
-                    <div class="admin-subsection" style="margin-bottom:10px; display:grid; grid-template-columns:1fr 1fr auto; gap:10px; align-items:end;">
-                        <div class="admin-field" style="margin:0;"><label>Título</label><input type="text" name="categories[<?= e($catKey) ?>][videos][<?= $vi ?>][title]" value="<?= e($video['title']) ?>"></div>
-                        <div class="admin-field" style="margin:0;"><label>URL YouTube / Vimeo</label><input type="text" name="categories[<?= e($catKey) ?>][videos][<?= $vi ?>][video_url]" value="<?= e($video['video_url']) ?>"></div>
-                        <a class="admin-btn admin-btn--danger" href="manuals.php?action=delete_video&id=<?= (int)$video['id'] ?>" onclick="return confirm('Remover este vídeo?')">✕</a>
-                    </div>
-                <?php endforeach; ?>
-                <div class="admin-subsection" style="margin-bottom:10px; display:grid; grid-template-columns:1fr 1fr; gap:10px;" id="new-video-<?= e($catKey) ?>">
-                    <div class="admin-field" style="margin:0;"><label>Novo vídeo — Título</label><input type="text" name="categories[<?= e($catKey) ?>][videos][<?= count($videos) ?>][title]" placeholder="Ex: Como acessar o AVA"></div>
-                    <div class="admin-field" style="margin:0;"><label>URL YouTube / Vimeo</label><input type="text" name="categories[<?= e($catKey) ?>][videos][<?= count($videos) ?>][video_url]" placeholder="https://youtube.com/watch?v=..."></div>
-                </div>
-            </div>
-        </section>
-    <?php endforeach; ?>
-
-    <div class="admin-actions-row"><button type="submit" class="admin-btn admin-btn--primary">Salvar configurações e vídeos</button></div>
-</form>
 
 <!-- ── Seção Manuais do Aluno ──────────────────────────────────────── -->
 <section class="admin-panel" style="margin-top:32px;">

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= e($site['site_name']) ?></title>
-    <link rel="stylesheet" href="assets/css/site.css">
+    <link rel="stylesheet" href="assets/css/site.css?v=2">
 </head>
 <body>
     <header class="header">
@@ -34,6 +34,10 @@
                 </a>
                 <nav class="nav__menu nav__menu--right">
                     <?php foreach ($rightMenu as $item): ?><a href="<?= e($item['url']) ?>"><?= e($item['label']) ?></a><?php endforeach; ?>
+                    <a class="nav__ava-btn" href="https://avaunivag.univagead.com.br/login/index.php" target="_blank" rel="noopener">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z" fill="currentColor"/><path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z" fill="currentColor"/></svg>
+                        Plataforma AVA
+                    </a>
                 </nav>
             </div>
         </div>
@@ -73,51 +77,78 @@
         <section class="section" id="cursos">
             <div class="container"><h2 class="section__title"><?= e($content['courses']['title']) ?></h2><div class="card-grid card-grid--courses"><?php foreach ($content['courses']['items'] as $course): ?><a class="course-card" href="<?= e($course['url']) ?>" style="background-image: linear-gradient(rgba(10, 20, 90, .78), rgba(10, 20, 90, .78)), url('<?= e($course['image']) ?>')"><h3><?= e($course['title']) ?></h3><div class="course-card__tags"><?php foreach ($course['tags'] as $tag): ?><span><?= e($tag) ?></span><?php endforeach; ?></div></a><?php endforeach; ?></div></div>
         </section>
+        <?php
+            $modalityModel = new \App\Models\ModalityModel();
+            $modalityItems = $modalityModel->active();
+        ?>
+        <?php if ($modalityItems): ?>
         <section class="section section--soft" id="modalidades">
-            <div class="container"><h2 class="section__title"><?= e($content['modalities']['title']) ?></h2><div class="modality-list"><?php foreach ($content['modalities']['items'] as $index => $item): ?><article class="modality <?= $index % 2 === 1 ? 'modality--reverse' : '' ?>"><img src="<?= e($item['image']) ?>" alt="<?= e($item['title']) ?>"><div class="modality__content"><h3><?= e($item['title']) ?></h3><p><?= nl2html($item['content']) ?></p><a class="btn" href="<?= e($item['cta_url']) ?>"><?= e($item['cta_label']) ?></a></div></article><?php endforeach; ?></div></div>
-        </section>
-        <section class="bolsas-section" id="bolsas">
-            <?php $sch = $content['scholarships']; ?>
-            <div class="bolsas-inner">
-                <?php
-                    $coverSrc   = '';
-                    if ((new \App\Models\SiteImageModel())->exists('scholarships_cover')) {
-                        $coverSrc = 'site-image.php?key=scholarships_cover';
-                    } elseif (!empty($sch['cover_image'])) {
-                        $coverSrc = $sch['cover_image'];
-                    }
-                    $coverShape = $sch['cover_shape'] ?? 'diagonal';
-                ?>
-                <div class="bolsas-cover bolsas-cover--<?= e($coverShape) ?>">
-                    <?php if ($coverSrc !== ''): ?>
-                        <img src="<?= e($coverSrc) ?>" alt="<?= e($sch['title']) ?>">
-                    <?php endif; ?>
-                    <?php if ($coverShape === 'diagonal'): ?>
-                        <div class="bolsas-diagonal"></div>
-                    <?php endif; ?>
-                </div>
-                <div class="bolsas-content">
-                    <h2 class="bolsas-title"><?= e($sch['title']) ?></h2>
-                    <div class="bolsas-grid">
-                        <?php foreach ($sch['items'] as $item): ?>
-                            <?php [$small, $bold] = bolsas_split_label($item['label']); ?>
-                            <a class="bolsas-item" href="<?= e($item['url']) ?>">
-                                <?php if ($small): ?><span class="bolsas-item__small"><?= e($small) ?></span><?php endif; ?>
-                                <span class="bolsas-item__bold"><?= e($bold) ?></span>
-                            </a>
-                        <?php endforeach; ?>
-                    </div>
-                    <?php if (!empty($sch['cta_label']) && !empty($sch['cta_url'])): ?>
-                        <div class="bolsas-cta">
-                            <a class="bolsas-cta__btn" href="<?= e($sch['cta_url']) ?>"><?= e($sch['cta_label']) ?></a>
-                        </div>
-                    <?php endif; ?>
+            <div class="container">
+                <h2 class="section__title"><?= e($content['modalities']['title']) ?></h2>
+                <div class="modality-list">
+                    <?php foreach ($modalityItems as $index => $item): ?>
+                        <article class="modality <?= $index % 2 === 1 ? 'modality--reverse' : '' ?>">
+                            <?php if ($modalityModel->hasImage((int) $item['id'])): ?>
+                                <img src="modality-image.php?id=<?= (int) $item['id'] ?>" alt="<?= e($item['title']) ?>">
+                            <?php endif; ?>
+                            <div class="modality__content">
+                                <h3><?= e($item['title']) ?></h3>
+                                <?php if (!empty($item['content'])): ?><p><?= nl2html($item['content']) ?></p><?php endif; ?>
+                                <?php if (!empty($item['cta_label']) && !empty($item['cta_url'])): ?>
+                                    <a class="btn" href="<?= e($item['cta_url']) ?>"><?= e($item['cta_label']) ?></a>
+                                <?php endif; ?>
+                            </div>
+                        </article>
+                    <?php endforeach; ?>
                 </div>
             </div>
         </section>
-        <section class="section section--soft"><div class="container structure-callout"><div><span class="eyebrow"><?= e($content['structure']['title']) ?></span><a class="btn" href="<?= e($content['structure']['cta_url']) ?>"><?= e($content['structure']['cta_label']) ?></a></div></div></section>
+        <?php endif; ?>
+        <?php if ((new \App\Models\SiteImageModel())->exists('scholarships_cover')): ?>
+        <section class="bolsas-banner" id="bolsas">
+            <img src="site-image.php?key=scholarships_cover" alt="Bolsas e Parcelamentos">
+        </section>
+        <?php endif; ?>
 
-        <section class="section" id="noticias"><div class="container"><h2 class="section__title"><?= e($content['news']['title']) ?></h2><a class="news-featured" href="<?= e($content['news']['featured']['url']) ?>"><img src="<?= e($content['news']['featured']['image']) ?>" alt="<?= e($content['news']['featured']['title']) ?>"><div><span><?= e(format_date_br($content['news']['featured']['date'])) ?></span><h3><?= e($content['news']['featured']['title']) ?></h3><p><?= e($content['news']['featured']['excerpt']) ?></p></div></a><div class="news-grid"><?php foreach ($content['news']['items'] as $item): ?><a class="news-card" href="<?= e($item['url']) ?>"><img src="<?= e($item['image']) ?>" alt="<?= e($item['title']) ?>"><span><?= e(format_date_br($item['date'])) ?></span><h3><?= e($item['title']) ?></h3></a><?php endforeach; ?></div></div></section>
+        <?php
+            $newsModel    = new \App\Models\NewsModel();
+            $newsFeatured = $newsModel->getFeatured();
+            $newsRegular  = $newsModel->getRegular();
+        ?>
+        <?php if ($newsFeatured || $newsRegular): ?>
+        <section class="section" id="noticias">
+            <div class="container">
+                <h2 class="section__title"><?= e($content['news']['title']) ?></h2>
+                <?php if ($newsFeatured): ?>
+                    <a class="news-featured" href="<?= e($newsFeatured['url'] ?? '#') ?>">
+                        <?php if ($newsModel->hasImage((int) $newsFeatured['id'])): ?>
+                            <img src="news-image.php?id=<?= (int) $newsFeatured['id'] ?>" alt="<?= e($newsFeatured['title']) ?>">
+                        <?php endif; ?>
+                        <div>
+                            <span><?= e(format_date_br($newsFeatured['published_at'])) ?></span>
+                            <h3><?= e($newsFeatured['title']) ?></h3>
+                            <?php if (!empty($newsFeatured['excerpt'])): ?><p><?= e($newsFeatured['excerpt']) ?></p><?php endif; ?>
+                        </div>
+                    </a>
+                <?php endif; ?>
+                <?php if ($newsRegular): ?>
+                    <div class="news-grid">
+                        <?php foreach ($newsRegular as $item): ?>
+                            <a class="news-card" href="<?= e($item['url'] ?? '#') ?>">
+                                <?php if ($newsModel->hasImage((int) $item['id'])): ?>
+                                    <img src="news-image.php?id=<?= (int) $item['id'] ?>" alt="<?= e($item['title']) ?>">
+                                <?php else: ?>
+                                    <div style="height:220px; background:#e0e4f0;"></div>
+                                <?php endif; ?>
+                                <span><?= e(format_date_br($item['published_at'])) ?></span>
+                                <h3><?= e($item['title']) ?></h3>
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </section>
+        <?php endif; ?>
     </main>
     <footer class="footer"><div class="container footer__cta"><?php foreach ($site['footer_ctas'] as $cta): ?><a href="<?= e($cta['url']) ?>"><?= e($cta['label']) ?></a><?php endforeach; ?></div><div class="container footer__main"><div class="footer__brand"><?php $__hasFooterLogo = (new \App\Models\SiteImageModel())->exists('logo_footer'); ?><a href="index.php" class="nav__brand nav__brand--footer"><?php if ($__hasFooterLogo): ?><img src="site-image.php?key=logo_footer" alt="<?= e($site['logo_text']) ?>" class="nav__logo-img nav__logo-img--footer"><?php else: ?><?= e($site['logo_text']) ?><?php endif; ?></a></div><div class="footer__columns"><?php foreach ($site['footer_columns'] as $column): ?><div><h3><?= e($column['title']) ?></h3><?php foreach ($column['links'] as $link): ?><a href="<?= e($link['url']) ?>"><?= e($link['label']) ?></a><?php endforeach; ?></div><?php endforeach; ?></div></div><div class="footer__addresses"><div class="container footer__address-grid"><?php foreach ($site['addresses'] as $address): ?><a href="<?= e($address['url']) ?>"><h3><?= e($address['title']) ?></h3><p><?= nl2html($address['description']) ?></p></a><?php endforeach; ?></div></div><div class="footer__bottom"><div class="container"><a href="<?= e($site['privacy_url']) ?>"><?= e($site['privacy_text']) ?></a></div></div></footer>
     <script src="assets/js/site.js"></script>

@@ -206,10 +206,11 @@ final class AdminController
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             csrf_verify();
-            $content['site']['site_name']   = trim((string) ($_POST['site_name']   ?? $content['site']['site_name']));
-            $content['site']['logo_text']   = trim((string) ($_POST['logo_text']   ?? $content['site']['logo_text']));
-            $content['site']['privacy_text'] = trim((string) ($_POST['privacy_text'] ?? $content['site']['privacy_text']));
-            $content['site']['privacy_url']  = trim((string) ($_POST['privacy_url']  ?? $content['site']['privacy_url']));
+            $content['site']['site_name']       = trim((string) ($_POST['site_name']       ?? $content['site']['site_name']));
+            $content['site']['logo_text']       = trim((string) ($_POST['logo_text']       ?? $content['site']['logo_text']));
+            $content['site']['privacy_text']    = trim((string) ($_POST['privacy_text']    ?? $content['site']['privacy_text']));
+            $content['site']['privacy_url']     = trim((string) ($_POST['privacy_url']     ?? $content['site']['privacy_url']));
+            $content['site']['whatsapp_number'] = preg_replace('/\D/', '', (string) ($_POST['whatsapp_number'] ?? ''));
 
             // Logo uploads
             foreach (['logo_nav', 'logo_footer'] as $logoKey) {
@@ -234,28 +235,16 @@ final class AdminController
             if (isset($_POST['course_items'])) { $content['courses']['items'] = post_tags_list('course_items'); }
             $content['modalities']['title'] = trim((string) ($_POST['modalities_title'] ?? $content['modalities']['title']));
             if (isset($_POST['modalities_items'])) { $content['modalities']['items'] = post_list('modalities_items', ['title', 'image', 'content', 'cta_label', 'cta_url']); }
-            $content['scholarships']['title']       = trim((string) ($_POST['scholarships_title'] ?? $content['scholarships']['title']));
-            $content['scholarships']['cta_label']   = trim((string) ($_POST['scholarships_cta_label'] ?? ''));
-            $content['scholarships']['cta_url']     = trim((string) ($_POST['scholarships_cta_url'] ?? ''));
-            $allowedShapes = ['diagonal', 'retangulo', 'quadrado', 'arredondado'];
-            $shape = (string) ($_POST['scholarships_cover_shape'] ?? 'diagonal');
-            $content['scholarships']['cover_shape'] = in_array($shape, $allowedShapes, true) ? $shape : 'diagonal';
-
-            // Handle cover image: file upload takes priority over URL field
+            // Handle bolsas banner image upload
             if (!empty($_FILES['scholarships_cover_image']['name'])) {
                 try {
                     $this->siteImageModel->saveUpload($_FILES['scholarships_cover_image'], 'scholarships_cover');
-                    // Clear the URL so the DB image is used
-                    $content['scholarships']['cover_image'] = '';
                 } catch (\Throwable $uploadError) {
                     $this->flash('Erro no upload da imagem: ' . $uploadError->getMessage(), 'error');
                     header('Location: content.php');
                     exit;
                 }
-            } else {
-                $content['scholarships']['cover_image'] = trim((string) ($_POST['scholarships_cover_image'] ?? ''));
             }
-            if (isset($_POST['scholarship_items'])) { $content['scholarships']['items'] = post_list('scholarship_items', ['label', 'url']); }
             $content['structure']['title'] = trim((string) ($_POST['structure_title'] ?? $content['structure']['title']));
             $content['structure']['cta_label'] = trim((string) ($_POST['structure_cta_label'] ?? $content['structure']['cta_label']));
             $content['structure']['cta_url'] = trim((string) ($_POST['structure_cta_url'] ?? $content['structure']['cta_url']));
@@ -327,11 +316,18 @@ final class AdminController
             csrf_verify();
 
             if ($action === 'save_config') {
+                if (!empty($_FILES['manuals_banner']['name'])) {
+                    try {
+                        $this->siteImageModel->saveUpload($_FILES['manuals_banner'], 'manuals_banner');
+                    } catch (\Throwable $uploadError) {
+                        $this->flash('Erro no upload do banner: ' . $uploadError->getMessage(), 'error');
+                        header('Location: manuals.php');
+                        exit;
+                    }
+                }
                 $manualModel->savePageConfig([
-                    'title'      => trim((string) ($_POST['title'] ?? '')),
-                    'intro'      => trim((string) ($_POST['intro'] ?? '')),
-                    'hero_image' => trim((string) ($_POST['hero_image'] ?? '')),
-                    'hero_logo'  => trim((string) ($_POST['hero_logo'] ?? '')),
+                    'title' => trim((string) ($_POST['title'] ?? '')),
+                    'intro' => trim((string) ($_POST['intro'] ?? '')),
                 ]);
                 foreach (['aluno', 'professor'] as $cat) {
                     $manualModel->saveCategoryConfig($cat, [
@@ -431,6 +427,156 @@ final class AdminController
         ]);
     }
 
+    public function modalities(): void
+    {
+        require_login();
+        $modalityModel = new \App\Models\ModalityModel();
+        $action        = (string) ($_POST['action'] ?? '');
+        $id            = (int) ($_POST['id'] ?? 0);
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            csrf_verify();
+            try {
+                match ($action) {
+                    'create' => $modalityModel->create($_POST, $_FILES['image'] ?? null),
+                    'update' => $modalityModel->update($id, $_POST, $_FILES['image'] ?? null),
+                    'delete' => $modalityModel->delete($id),
+                    default  => throw new \RuntimeException('Ação inválida.'),
+                };
+                $this->flash(match ($action) {
+                    'create' => 'Modalidade criada.',
+                    'update' => 'Modalidade atualizada.',
+                    'delete' => 'Modalidade excluída.',
+                    default  => 'OK.',
+                });
+            } catch (\Throwable $e) {
+                $this->flash($e->getMessage(), 'error');
+            }
+            header('Location: modalities.php');
+            exit;
+        }
+
+        $editId = (int) ($_GET['edit'] ?? 0);
+
+        View::render('admin.modalities', [
+            'title'         => 'Modalidades',
+            'active'        => 'modalities',
+            'flash'         => $this->consumeFlash(),
+            'modalityList'  => $modalityModel->all(),
+            'count'         => $modalityModel->count(),
+            'modalityModel' => $modalityModel,
+            'editId'        => $editId,
+        ]);
+    }
+
+    public function news(): void
+    {
+        require_login();
+        $newsModel = new \App\Models\NewsModel();
+        $action    = (string) ($_GET['action'] ?? ($_POST['action'] ?? ''));
+        $id        = (int) ($_GET['id'] ?? ($_POST['id'] ?? 0));
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            csrf_verify();
+            try {
+                match ($action) {
+                    'create' => $newsModel->create($_POST, $_FILES['image'] ?? null),
+                    'update' => $newsModel->update($id, $_POST, $_FILES['image'] ?? null),
+                    'delete' => $newsModel->delete($id),
+                    'feature' => $newsModel->setFeatured($id),
+                    default => throw new \RuntimeException('Ação inválida.'),
+                };
+                $this->flash(match ($action) {
+                    'create'  => 'Notícia criada.',
+                    'update'  => 'Notícia atualizada.',
+                    'delete'  => 'Notícia excluída.',
+                    'feature' => 'Notícia marcada como destaque.',
+                    default   => 'OK.',
+                });
+            } catch (\Throwable $e) {
+                $this->flash($e->getMessage(), 'error');
+            }
+            header('Location: news.php');
+            exit;
+        }
+
+        $editNews = ($action === 'edit' && $id > 0) ? $newsModel->getById($id) : null;
+
+        View::render('admin.news', [
+            'title'     => 'Notícias',
+            'active'    => 'news',
+            'flash'     => $this->consumeFlash(),
+            'newsList'  => $newsModel->all(),
+            'count'     => $newsModel->count(),
+            'newsModel' => $newsModel,
+            'editNews'  => $editNews,
+        ]);
+    }
+
+    public function users(): void
+    {
+        require_login();
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            csrf_verify();
+            $action = (string) ($_POST['action'] ?? '');
+            $userId = (int) ($_POST['user_id'] ?? 0);
+
+            try {
+                match ($action) {
+                    'create' => (function () {
+                        $pw      = (string) ($_POST['password'] ?? '');
+                        $confirm = (string) ($_POST['confirm_password'] ?? '');
+                        if ($pw !== $confirm) throw new \RuntimeException('As senhas não conferem.');
+                        $this->userModel->create(
+                            trim((string) ($_POST['username'] ?? '')),
+                            $pw,
+                            (string) ($_POST['role'] ?? 'admin')
+                        );
+                        $this->flash('Usuário criado com sucesso.');
+                    })(),
+
+                    'update' => (function () use ($userId) {
+                        $this->userModel->update(
+                            $userId,
+                            trim((string) ($_POST['username'] ?? '')),
+                            (string) ($_POST['role'] ?? 'admin'),
+                            (bool) ($_POST['active'] ?? true)
+                        );
+                        $this->flash('Usuário atualizado.');
+                    })(),
+
+                    'reset_password' => (function () use ($userId) {
+                        $pw      = (string) ($_POST['new_password'] ?? '');
+                        $confirm = (string) ($_POST['confirm_password'] ?? '');
+                        if ($pw !== $confirm) throw new \RuntimeException('As senhas não conferem.');
+                        $this->userModel->resetPassword($userId, $pw);
+                        $this->flash('Senha resetada com sucesso.');
+                    })(),
+
+                    'delete' => (function () use ($userId) {
+                        $this->userModel->delete($userId);
+                        $this->flash('Usuário excluído.');
+                    })(),
+
+                    default => throw new \RuntimeException('Ação inválida.'),
+                };
+            } catch (\Throwable $e) {
+                $this->flash($e->getMessage(), 'error');
+            }
+
+            header('Location: users.php');
+            exit;
+        }
+
+        View::render('admin.users', [
+            'title'  => 'Usuários do CMS',
+            'active' => 'users',
+            'flash'  => $this->consumeFlash(),
+            'users'  => $this->userModel->all(),
+        ]);
+    }
+
     public function settings(): void
     {
         require_login();
@@ -441,7 +587,7 @@ final class AdminController
             $confirm = (string) ($_POST['confirm_password'] ?? '');
             $user = (string) ($_SESSION['admin_user'] ?? 'admin');
 
-            if (!$this->userModel->verify($user, $current)) {
+            if (!$this->userModel->verifyByUsername($user, $current)) {
                 $this->flash('Senha atual invalida.', 'error');
             } elseif ($new === '' || strlen($new) < 6) {
                 $this->flash('A nova senha precisa ter no minimo 6 caracteres.', 'error');

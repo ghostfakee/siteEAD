@@ -29,6 +29,9 @@
                 'upload' => ['Novo Banner', 'upload.php'],
                 'content' => ['Conteudo do Site', 'content.php'],
                 'manuals' => ['Manuais', 'manuals.php'],
+                'news'        => ['Notícias', 'news.php'],
+                'modalities'  => ['Modalidades', 'modalities.php'],
+                'users'    => ['Usuários', 'users.php'],
                 'settings' => ['Configuracoes', 'settings.php'],
             ];
             foreach ($items as $key => [$label, $url]):

@@ -201,6 +201,8 @@ function content_data(): array
         }
     }
 
+    $content['site']['whatsapp_number'] = $content['site']['whatsapp_number'] ?? '';
+
     foreach (($content['hero']['slides'] ?? []) as $index => $slide) {
         $content['hero']['slides'][$index]['id'] = $slide['id'] ?? ('slide_' . ($index + 1));
         $content['hero']['slides'][$index]['order'] = (int) ($slide['order'] ?? $index);

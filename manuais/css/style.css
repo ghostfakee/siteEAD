@@ -7,68 +7,27 @@ img { max-width: 100%; display: block; }
 /* Header */
 .manuals-header {
     position: relative;
+    line-height: 0;
 }
-.manuals-header__inner {
-    min-height: 220px;
-    background: linear-gradient(100deg, #160a5b 0%, #2d1a8e 60%, #160a5b 100%);
-    background-size: cover;
-    background-position: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 40px 24px;
-}
-.manuals-header__logo {
-    max-width: 320px;
-    margin: 0 auto;
-}
-.manuals-header__brand {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-.manuals-header__brand-univag {
-    font-size: clamp(2rem, 5vw, 3.2rem);
-    font-weight: 900;
-    color: #fff;
-    letter-spacing: .06em;
-    border: 3px solid rgba(255,255,255,.7);
-    border-radius: 10px;
-    padding: 4px 16px;
-}
-.manuals-header__brand-sep {
-    color: rgba(255,255,255,.5);
-    font-size: 2.5rem;
-    font-weight: 300;
-}
-.manuals-header__brand-ead {
-    font-size: clamp(2rem, 5vw, 3.2rem);
-    font-weight: 900;
-    color: #fff;
-    letter-spacing: .04em;
-}
-.manuals-header__brand-title {
-    color: rgba(255,255,255,.88);
-    font-size: clamp(1.1rem, 2.5vw, 1.6rem);
-    font-weight: 500;
-    letter-spacing: .02em;
-    margin-left: 6px;
+.manuals-banner {
+    width: 100%;
+    display: block;
+    height: auto;
 }
 .manuals-header__back {
     position: absolute;
     top: 14px;
     left: 20px;
-    color: rgba(255,255,255,.75);
+    color: rgba(255,255,255,.9);
     font-size: .88rem;
     font-weight: 600;
     padding: 6px 12px;
     border-radius: 20px;
-    background: rgba(255,255,255,.1);
+    background: rgba(0,0,0,.28);
     transition: background .18s;
+    line-height: normal;
 }
-.manuals-header__back:hover { background: rgba(255,255,255,.2); }
+.manuals-header__back:hover { background: rgba(0,0,0,.45); }
 
 /* Main */
 .manuals-main {

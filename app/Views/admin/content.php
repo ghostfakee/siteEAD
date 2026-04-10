@@ -81,78 +81,18 @@
     <section class="admin-panel">
         <div class="admin-panel__header">
             <h2>Área 2 — Bolsas e Parcelamentos</h2>
-            <p style="margin:4px 0 0; font-size:.88rem; opacity:.65;">Uma imagem de capa e um título por vez. Configure o botão e os itens de bolsas abaixo.</p>
+            <p style="margin:4px 0 0; font-size:.88rem; opacity:.65;">Banner full-width. Suba a imagem já com os textos e design prontos.</p>
         </div>
-
-        <div class="admin-form-grid admin-form-grid--2" style="margin-bottom:16px;">
-            <div class="admin-field">
-                <label>Título da seção</label>
-                <input type="text" name="scholarships_title" value="<?= e($content['scholarships']['title']) ?>">
-            </div>
-            <div class="admin-field">
-                <label>Layout da imagem</label>
-                <?php $coverShape = $content['scholarships']['cover_shape'] ?? 'diagonal'; ?>
-                <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:4px;">
-                    <?php foreach ([
-                        'diagonal'    => ['label' => 'Diagonal', 'svg' => '<svg width="48" height="36" viewBox="0 0 48 36"><rect width="48" height="36" fill="#d0d0e8" rx="4"/><polygon points="0,0 30,0 0,36" fill="#9090c0"/></svg>'],
-                        'retangulo'   => ['label' => 'Retângulo', 'svg' => '<svg width="48" height="36" viewBox="0 0 48 36"><rect width="48" height="36" fill="#9090c0" rx="4"/></svg>'],
-                        'quadrado'    => ['label' => 'Quadrado', 'svg' => '<svg width="48" height="36" viewBox="0 0 48 36"><rect x="4" y="0" width="36" height="36" fill="#9090c0" rx="4"/></svg>'],
-                        'arredondado' => ['label' => 'Arredondado', 'svg' => '<svg width="48" height="36" viewBox="0 0 48 36"><rect width="48" height="36" fill="#9090c0" rx="18"/></svg>'],
-                    ] as $val => $opt): ?>
-                        <label style="display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; font-size:.78rem; font-weight:600; opacity:<?= $coverShape === $val ? '1' : '.5' ?>;">
-                            <input type="radio" name="scholarships_cover_shape" value="<?= $val ?>" <?= $coverShape === $val ? 'checked' : '' ?> style="display:none;" onchange="this.closest('.admin-field').querySelectorAll('label').forEach(l=>l.style.opacity='.5'); this.closest('label').style.opacity='1'">
-                            <?= $opt['svg'] ?>
-                            <?= $opt['label'] ?>
-                        </label>
-                    <?php endforeach; ?>
+        <div class="admin-field" style="max-width:520px;">
+            <label>Imagem do banner <small style="font-weight:400;opacity:.6;">JPG, PNG, WebP — qualquer dimensão</small></label>
+            <?php if ((new \App\Models\SiteImageModel())->exists('scholarships_cover')): ?>
+                <div style="margin-bottom:8px;">
+                    <img src="site-image.php?key=scholarships_cover" style="max-height:100px; border-radius:8px; object-fit:cover;" alt="banner atual">
+                    <small style="display:block; margin-top:4px; opacity:.6;">Banner atual. Novo upload substitui.</small>
                 </div>
-            </div>
+            <?php endif; ?>
+            <input type="file" name="scholarships_cover_image" accept="image/jpeg,image/png,image/webp,image/gif">
         </div>
-
-        <div class="admin-form-grid admin-form-grid--2" style="margin-bottom:16px;">
-            <div class="admin-field">
-                <label>Imagem de capa <small style="font-weight:400;opacity:.6;">— upload salva no banco; ou informe uma URL</small></label>
-                <?php
-                    $hasCoverDb  = (new \App\Models\SiteImageModel())->exists('scholarships_cover');
-                    $coverUrl    = $content['scholarships']['cover_image'] ?? '';
-                ?>
-                <?php if ($hasCoverDb): ?>
-                    <div style="margin-bottom:8px;">
-                        <img src="site-image.php?key=scholarships_cover" style="max-height:80px; border-radius:8px; object-fit:cover;" alt="capa atual">
-                        <small style="display:block; margin-top:4px; opacity:.6;">Imagem salva no banco. Faça novo upload para substituir.</small>
-                    </div>
-                <?php elseif (!empty($coverUrl)): ?>
-                    <div style="margin-bottom:8px;"><img src="<?= e($coverUrl) ?>" style="max-height:80px; border-radius:8px; object-fit:cover;" alt="capa"></div>
-                <?php endif; ?>
-                <input type="file" name="scholarships_cover_image" accept="image/jpeg,image/png,image/webp,image/gif" style="margin-bottom:6px;">
-                <input type="text" name="scholarships_cover_image" value="<?= e($coverUrl) ?>" placeholder="https://... (opcional, usado se não houver upload)">
-            </div>
-        </div>
-
-        <div class="admin-form-grid admin-form-grid--2" style="margin-bottom:20px; padding:16px; background:#f9f9ff; border-radius:14px; border:1px solid var(--line);">
-            <div class="admin-field">
-                <label>Texto do botão <small style="font-weight:400;opacity:.6;">(deixe vazio para ocultar)</small></label>
-                <input type="text" name="scholarships_cta_label" value="<?= e($content['scholarships']['cta_label'] ?? '') ?>" placeholder="Ex: Veja todas as condições de pagamento">
-            </div>
-            <div class="admin-field">
-                <label>Link do botão</label>
-                <input type="text" name="scholarships_cta_url" value="<?= e($content['scholarships']['cta_url'] ?? '') ?>" placeholder="https://...">
-            </div>
-        </div>
-
-        <h3 style="margin:0 0 12px; font-size:.95rem; opacity:.75;">Itens de Bolsas</h3>
-        <?php foreach ($content['scholarships']['items'] as $index => $item): ?>
-            <div class="admin-form-grid admin-form-grid--2" style="margin-bottom:8px;">
-                <div class="admin-field">
-                    <label>Rótulo</label>
-                    <input type="text" name="scholarship_items[<?= $index ?>][label]" value="<?= e($item['label']) ?>" placeholder="Ex: Orgulho de Ser UNIVAG">
-                </div>
-                <div class="admin-field">
-                    <label>Link</label>
-                    <input type="text" name="scholarship_items[<?= $index ?>][url]" value="<?= e($item['url']) ?>" placeholder="https://...">
-                </div>
-            </div>
-        <?php endforeach; ?>
     </section>
 
     <div class="admin-actions-row"><button type="submit" class="admin-btn admin-btn--primary">Salvar conteudo</button></div>
